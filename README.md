@@ -1,0 +1,1 @@
+# Desenvolvimento-e-Implementa-o-de-uma-Arquitetura-Multicore-com-Escalonamento-e-Ger-ncia-de-Mem-ria

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Sistemas Operacionais: Simulador da Arquitetura de Von Neumann e Pipeline MIPS
 
 <div style="display: inline_block">

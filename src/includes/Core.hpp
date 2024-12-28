@@ -18,7 +18,7 @@ using namespace std;
 class Core {
 private:
     int id;
-    bool disponivel;
+    //bool disponivel;
     Process* processoAtual;
     RAM& ram;
     Disco& disco;
@@ -27,6 +27,8 @@ public:
     Core();
     Core(int coreId, RAM& memory, Disco& storage);
     ~Core();
+
+    bool disponivel;
     
     pthread_mutex_t mutex_core;
     

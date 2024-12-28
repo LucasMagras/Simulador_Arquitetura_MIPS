@@ -31,8 +31,10 @@ Core::~Core() {
 
 void Core::executeProcess(Process* processo, vector<Process*>& filaProcessos) {
     std::lock_guard<std::mutex> lock(coutMutex);
-    cout << endl << "--- Iniciando execução do processo " << processo->pcb.pid << " no Core " << id << " ---" << endl;
-    pthread_mutex_lock(&mutex_core);
+    cout << endl << "--- Iniciando execução do processo " << processo->pcb.pid + 1 << " no Core " << id + 1<< " ---" << endl;
+    //pthread_mutex_lock(&mutex_core);
+    std::cout.flush();
+    //std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Atraso de 100ms
     
     try {
         if (processo == nullptr) {
@@ -41,23 +43,17 @@ void Core::executeProcess(Process* processo, vector<Process*>& filaProcessos) {
             return;
         }
 
-        disponivel = false;
+        //disponivel = false;
         processoAtual = processo;
 
         processo->executar(ram, disco);
 
         switch (processo->pcb.estado) {
             case Process::FINALIZADO:
-                cout << "Processo " << processo->pcb.pid << " finalizado no Core " << id << endl;
-                break;
-            case Process::PRONTO:
-                cout << "Processo " << processo->pcb.pid  << " preemptado no Core " << id << endl;
+                cout << "Processo " << processo->pcb.pid + 1 << " finalizado no Core " << id + 1<< endl;
                 break;
             case Process::BLOQUEADO:
-                cout << "Processo " << processo->pcb.pid << " bloqueado no Core " << id << endl;
-                break;
-            case Process::EXECUTANDO:
-                cout << "Processo " << processo->pcb.pid << " ainda em execução no Core " << id << endl;
+                cout << "Processo " << processo->pcb.pid + 1 << " bloqueado no Core " << id + 1 << endl;
                 break;
         }
 
@@ -73,8 +69,8 @@ void Core::executeProcess(Process* processo, vector<Process*>& filaProcessos) {
     disponivel = true;
     processoAtual = nullptr;
 
-    pthread_mutex_unlock(&mutex_core);
-    cout << "Finalizando execução do processo " << processo->pcb.pid << " no Core " << id << endl;
+    //pthread_mutex_unlock(&mutex_core);
+    cout << "Finalizando execução do processo " << processo->pcb.pid + 1 << " no Core " << id + 1 << endl;
 }
 
 bool Core::isDisponivel() {

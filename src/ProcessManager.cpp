@@ -54,20 +54,25 @@ void ProcessManager::carregarProcessos(const vector<string>& arquivosInstrucoes,
 void ProcessManager::escalonarProcessos() {
     cout << endl << "--- INICIANDO A EXECUCAO DE " << filaProcessos.size() << " PROCESSOS ---" << endl;
 
-    vector<thread> threads; 
+    std::vector<std::thread> threads; 
 
     while (!filaProcessos.empty()) {
         //distribui os processos para cores livres
         for (auto& core : cores) {
+            //cout << endl << "Verificando o estado do Core " << core.getId() + 1 << ": " 
+                 //<< (core.isDisponivel() ? "Disponível" : "Ocupado") << endl;
             if (core.isDisponivel() && !filaProcessos.empty()) {
                 Process* processo = filaProcessos.front();
                 filaProcessos.erase(filaProcessos.begin());
 
+                cout << endl << "--- Atribuindo o processo " << processo->pcb.pid + 1 << " ao Core " << core.getId() + 1 << " ---" <<endl;
+                core.disponivel = false;
+
                 //cria uma thread para executar o processo
                 threads.emplace_back(&Core::executeProcess, &core, processo, std::ref(filaProcessos));
             }
+            this_thread::sleep_for(chrono::milliseconds(1));
         }
-        this_thread::sleep_for(chrono::milliseconds(100));
     }
     
     for (auto& t : threads) {

@@ -1,5 +1,5 @@
 CXX      := -g++
-#CXXFLAGS := -Wall -Wextra -Werror
+CXXFLAGS := -std=c++17
 LDFLAGS  := -lstdc++ -lm
 # Flags de link
 LDFLAGS = -pthread

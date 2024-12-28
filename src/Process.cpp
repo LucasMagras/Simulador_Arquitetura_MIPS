@@ -36,14 +36,6 @@ void Process::carregarInstrucoes() {
     instrucoes.clear();
     string linha;
 
-     //pula para a linha correta se o processo não for novo
-    if (pcb.instrucaoAtual > 0) {
-        cout<<"pulando linha"<< endl;
-        for (int i = 0; i < pcb.instrucaoAtual; ++i) {
-            getline(arquivo, linha); //pula as linhas já executadas
-        }
-    }
-
     while (getline(arquivo, linha)) {
         istringstream ss(linha);
         string opcodeStr;
@@ -76,7 +68,7 @@ void Process::carregarInstrucoes() {
 
 void Process::executar(RAM& ram, Disco& disco) {
     //bloqueia o mutex para evitar acesso concorrente
-    pthread_mutex_lock(&mutex_processo);
+    //pthread_mutex_lock(&mutex_processo);
     pcb.estado = EXECUTANDO;
 
     Pipeline pipeline;
@@ -106,7 +98,7 @@ void Process::executar(RAM& ram, Disco& disco) {
             DecodedInstruction decodedInstr = InstructionDecode(instr, pcb.regs);
             Clock++;
 
-            cout << endl << "[Processo " << pcb.pid << "] Executando instrução:" 
+            cout << endl << "[Processo " << pcb.pid + 1 << "] Executando instrução:" 
                       << " PC=" << PC 
                       << " Opcode=" << decodedInstr.opcode 
                       << " Destino=R" << decodedInstr.destiny 
@@ -116,22 +108,22 @@ void Process::executar(RAM& ram, Disco& disco) {
             pipeline.Execute(decodedInstr, pcb.regs, ram, PC, disco, Clock);
             PC += 4;
 
-            cout << "PC = " << PC << endl;
+            //cout << "PC = " << PC << endl;
             cout << "Clock = " << Clock << endl;
 
         }
         
         if (PC >= instrucoes.size() * 4) {
             pcb.estado = FINALIZADO;
-            cout <<  endl << "--- Processo " << pcb.pid << " concluído ---" << endl << endl;
+            cout <<  endl << "--- Processo " << pcb.pid + 1 << " concluído ---" << endl << endl;
         }
     }
     catch (const exception& e) {
-        cerr << "Erro na execução do processo " << pcb.pid << ": " << e.what() << endl;
+        cerr << "Erro na execução do processo " << pcb.pid + 1<< ": " << e.what() << endl;
         pcb.estado = BLOQUEADO;
     }
 
-    pthread_mutex_unlock(&mutex_processo);
+    //pthread_mutex_unlock(&mutex_processo);
 }
 
 void Process::carregarRegistros(const string& arquivoRegistros){
@@ -152,9 +144,9 @@ void Process::desbloquear() {
 }
 
 void Process::salvarEstado() {
-    
     estadoSalvo.instrucaoAtual = pcb.instrucaoAtual;
     estadoSalvo.registradores = pcb.regs;
+    cout << "Salvando o estado do processo" << endl;
 }
 
 void Process::restaurarEstado() {

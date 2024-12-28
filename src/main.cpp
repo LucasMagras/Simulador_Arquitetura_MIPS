@@ -30,9 +30,10 @@ int main() {
         vector<string> arquivosProcessos = {
             "data/instructions.txt",
             "data/instructions2.txt",
-            "data/instructions3.txt",
-            "data/instructions4.txt",
-            "data/instructions5.txt"
+            //"data/instructions3.txt",
+            //"data/instructions4.txt",
+            "data/instructions5.txt",
+            "data/instructions6.txt"
         };
 
         vector<string> arquivosRegs = {
@@ -47,8 +48,6 @@ int main() {
 
         cout << "\n--- Estado Final do Disco ---" << endl;
         disco.display();
-
-        //outputBuffer.printMessages(); 
 
     } catch (const exception& e) {
         cout << "Erro durante a execução: " << e.what() << endl;

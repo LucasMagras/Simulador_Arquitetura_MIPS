@@ -33,8 +33,12 @@ void Process::carregarInstrucoes() {
         throw runtime_error("Não foi possível abrir o arquivo de instruções: " + filename);
     }
 
-    instrucoes.clear();
+    // Ignorar a primeira linha (prioridade do processo)
     string linha;
+    getline(arquivo, linha);
+
+    instrucoes.clear();
+    //string linha;
 
     while (getline(arquivo, linha)) {
         istringstream ss(linha);
@@ -98,24 +102,24 @@ void Process::executar(RAM& ram, Disco& disco) {
             DecodedInstruction decodedInstr = InstructionDecode(instr, pcb.regs);
             Clock++;
 
-            cout << endl << "[Processo " << pcb.pid + 1 << "] Executando instrução:" 
+            /*cout << endl << "[Processo " << pcb.pid + 1 << "] Executando instrução:" 
                       << " PC=" << PC 
                       << " Opcode=" << decodedInstr.opcode 
                       << " Destino=R" << decodedInstr.destiny 
                       << " Valor1=" << decodedInstr.value1 
-                      << " Valor2=" << decodedInstr.value2 << endl;
+                      << " Valor2=" << decodedInstr.value2 << endl;*/
 
             pipeline.Execute(decodedInstr, pcb.regs, ram, PC, disco, Clock);
             PC += 4;
 
             //cout << "PC = " << PC << endl;
-            cout << "Clock = " << Clock << endl;
+            //cout << "Clock = " << Clock << endl;
 
         }
         
         if (PC >= instrucoes.size() * 4) {
             pcb.estado = FINALIZADO;
-            cout <<  endl << "--- Processo " << pcb.pid + 1 << " concluído ---" << endl << endl;
+            cout <<  endl << "--- Processo " << pcb.pid + 1 << " concluído ---" << endl;
         }
     }
     catch (const exception& e) {

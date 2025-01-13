@@ -6,6 +6,10 @@ UnidadeControle::UnidadeControle(int numeroCores, RAM& ram, Disco& disco, const 
 
 void UnidadeControle::carregarArquivo(ProcessManager& processManager, const vector<string>& arquivosInstrucoes, const vector<string>& arquivosRegistros)
 {
-    processManager.carregarProcessos(arquivosInstrucoes, arquivosRegistros);
-    processManager.escalonarProcessos();
+    processManager.carregarProcessosPrioridade(arquivosInstrucoes, arquivosRegistros);
+    processManager.escalonarProcessosPrioridade();
+    processManager.carregarProcessoSJF(arquivosInstrucoes, arquivosRegistros);
+    processManager.escalonarSJF();
+    processManager.carregarProcessosFCFS(arquivosInstrucoes, arquivosRegistros);
+    processManager.escalonarProcessosFCFS();
 }

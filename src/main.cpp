@@ -30,8 +30,8 @@ int main() {
         vector<string> arquivosProcessos = {
             "data/instructions.txt",
             "data/instructions2.txt",
-            //"data/instructions3.txt",
-            //"data/instructions4.txt",
+            "data/instructions3.txt",
+            "data/instructions4.txt",
             "data/instructions5.txt",
             "data/instructions6.txt"
         };
@@ -43,11 +43,11 @@ int main() {
         //carrega os processos
         UnidadeControle uc(numeroCores, ram, disco, arquivosProcessos, arquivosRegs);
 
-        cout << "\n--- Estado Final da RAM ---" << endl;
-        ram.display();
+        //cout << "\n--- Estado Final da RAM ---" << endl;
+        //ram.display();
 
-        cout << "\n--- Estado Final do Disco ---" << endl;
-        disco.display();
+        //cout << "\n--- Estado Final do Disco ---" << endl;
+        //disco.display();
 
     } catch (const exception& e) {
         cout << "Erro durante a execução: " << e.what() << endl;

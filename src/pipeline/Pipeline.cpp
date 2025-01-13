@@ -25,12 +25,12 @@ void Pipeline::Wb(const DecodedInstruction& decoded, int& resultado, RAM& ram, D
 }
 
 void Pipeline::MemoryAccess(const DecodedInstruction& decoded, int resultado, Registers& regs, int& Clock) {
-    cout << "Resultado a ser armazenado: " << resultado << endl;
+    //cout << "Resultado a ser armazenado: " << resultado << endl;
 
     try {
         regs.set(decoded.destiny, resultado);
         Clock++;
-        cout << "Registrador R" << decoded.destiny << " atualizado para: " << regs.get(decoded.destiny) << endl;
+        //cout << "Registrador R" << decoded.destiny << " atualizado para: " << regs.get(decoded.destiny) << endl;
     }
     catch (const exception& e) {
         cerr << "Erro no Memory Access: " << e.what() << endl;
@@ -44,7 +44,7 @@ void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& 
             Clock++;
             MemoryAccess(decoded, resultado, regs, Clock);
             
-            cout << "ADD R" << decoded.destiny << " = " << decoded.value1 << " + " << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
+            //cout << "ADD R" << decoded.destiny << " = " << decoded.value1 << " + " << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
             break;
         }
         case SUB: {
@@ -52,7 +52,7 @@ void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& 
             Clock++;
             MemoryAccess(decoded, resultado, regs, Clock);
             
-            cout << "SUB R" << decoded.destiny << " = " << decoded.value1 << " - " << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
+            //cout << "SUB R" << decoded.destiny << " = " << decoded.value1 << " - " << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
             break;
         }
         case AND: {
@@ -60,7 +60,7 @@ void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& 
             Clock++;
             MemoryAccess(decoded, resultado, regs, Clock);
             
-            cout << "AND R" << decoded.destiny << " = " << decoded.value1 << " & " << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
+            //cout << "AND R" << decoded.destiny << " = " << decoded.value1 << " & " << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
             break;
         }
         case OR: {
@@ -68,23 +68,23 @@ void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& 
             Clock++;
             MemoryAccess(decoded, resultado, regs, Clock);
             
-            cout << "OR R" << decoded.destiny << " = " << decoded.value1 << " | " << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
+            //cout << "OR R" << decoded.destiny << " = " << decoded.value1 << " | " << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
             break;
         }
         case LOAD: {
             int valor = ram.read(decoded.value1);
             Clock++;
             MemoryAccess(decoded, valor, regs, Clock);
-            cout << "LOAD R" << decoded.destiny << " = RAM[" << decoded.value1 << "] -> " << regs.get(decoded.destiny) << endl;
+            //cout << "LOAD R" << decoded.destiny << " = RAM[" << decoded.value1 << "] -> " << regs.get(decoded.destiny) << endl;
             break;
         }
         case STORE: {
             int valor = regs.get(decoded.destiny);
             Clock++;
             Wb(decoded, valor, ram, disco, Clock);
-            cout << "STORE RAM[" << decoded.value1 << "] = R" << decoded.destiny << " -> " << valor << endl;
+            //cout << "STORE RAM[" << decoded.value1 << "] = R" << decoded.destiny << " -> " << valor << endl;
             disco.write(valor);
-            cout << "STORE DISK[" << valor << "]" << endl;
+            //cout << "STORE DISK[" << valor << "]" << endl;
             break;
         }
         case MULT: {
@@ -92,7 +92,7 @@ void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& 
             Clock++;
             MemoryAccess(decoded, resultado, regs, Clock);
             
-            cout << "MULT R" << decoded.destiny << " = " << decoded.value1 << " * " << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
+            //cout << "MULT R" << decoded.destiny << " = " << decoded.value1 << " * " << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
             break;
         }
         case DIV: {
@@ -101,9 +101,10 @@ void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& 
                 Clock++;
                 MemoryAccess(decoded, resultado, regs, Clock);
                 
-                cout << "DIV R" << decoded.destiny << " = " << decoded.value1 << " / " << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
-            } else {
-                cerr << "Erro: Divisão por zero!" << endl;
+                //cout << "DIV R" << decoded.destiny << " = " << decoded.value1 << " / " << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
+            } 
+            else {
+                //cerr << "Erro: Divisão por zero!" << endl;
             }
             break;
         }
@@ -112,13 +113,13 @@ void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& 
             Clock++;
             MemoryAccess(decoded, resultado, regs, Clock);
             
-            cout << "IF_igual " << decoded.destiny << " = R" << decoded.value1 << " == R" << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
+            //cout << "IF_igual " << decoded.destiny << " = R" << decoded.value1 << " == R" << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
             break;
         }
         case ENQ: {
             int resultado = decoded.value1;
-            cout << "OPERADOR 1: " << decoded.value1 << endl;
-            cout << "OPERADOR 2: " << decoded.value2 << endl;
+            //cout << "OPERADOR 1: " << decoded.value1 << endl;
+            //cout << "OPERADOR 2: " << decoded.value2 << endl;
             
             while (resultado != decoded.value2) {
                 if (resultado < decoded.value2) {
@@ -131,7 +132,7 @@ void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& 
                     MemoryAccess(decoded, resultado, regs, Clock);
                 }
             }
-            cout << "ENQ " << decoded.destiny << " = R" << decoded.value1 << " enquanto R" << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
+            //cout << "ENQ " << decoded.destiny << " = R" << decoded.value1 << " enquanto R" << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
             break;
         }
         default:

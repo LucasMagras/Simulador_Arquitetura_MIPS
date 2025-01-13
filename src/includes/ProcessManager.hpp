@@ -15,6 +15,10 @@ class Disco;
 class ProcessManager {
 private:
     vector<Process*> filaProcessos;
+    vector<Process*> filaProcessosSJF;
+    vector<Process*> filaProcessosAltaPrioridade;
+    vector<Process*> filaProcessosMediaPrioridade;
+    vector<Process*> filaProcessosBaixaPrioridade;
     vector<Core> cores;
     RAM& ramRef;
     Disco& discoRef;
@@ -25,8 +29,14 @@ public:
     ProcessManager(int numeroCores, RAM& ram, Disco& disco);
     ~ProcessManager();
 
-    void carregarProcessos(const vector<string>& arquivosInstrucoes, const vector<string>& arquivosRegistros);
-    void escalonarProcessos();
+    void carregarProcessosFCFS(const vector<string>& arquivosInstrucoes, const vector<string>& arquivosRegistros);
+    void carregarProcessosPrioridade(const vector<string>& arquivosInstrucoes, const vector<string>& arquivosRegistros);
+    void carregarProcessoSJF(const vector<string>& arquivosInstrucoes, const vector<string>& arquivosRegistros);
+
+    void escalonarProcessosFCFS();
+    void escalonarProcessosPrioridade();
+    void escalonarSJF();
+    int contarLinhas(const string& filename);
 };
 
 #endif

@@ -12,6 +12,7 @@
 #include "ProcessManager.hpp"
 #include "Process.hpp"
 #include "Core.hpp"
+#include "Cache.hpp"
 
 using namespace std;
 
@@ -20,7 +21,7 @@ private:
     ProcessManager processManager;
 
 public:
-    UnidadeControle(int numeroCores, RAM& ram, Disco& disco, const vector<string>& arquivosInstrucoes, const vector<string>& arquivosRegistros);
+    UnidadeControle(int numeroCores, RAM& ram, Disco& disco, Cache& cache, const vector<string>& arquivosInstrucoes, const vector<string>& arquivosRegistros);
     void carregarArquivo(ProcessManager& processManager, const vector<string>& arquivosInstrucoes, const vector<string>& arquivosRegistros);
 };
 

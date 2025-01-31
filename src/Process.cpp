@@ -6,6 +6,7 @@
 #include "includes/Pipeline.hpp"
 #include "includes/Opcode.hpp"
 #include "includes/UnidadeControle.hpp"
+#include "includes/Cache.hpp"
 
 #include <fstream>
 #include <sstream>
@@ -18,11 +19,11 @@ using namespace std;
 Process::Process(int id, const string& file) : filename(file) {
     pcb.pid = id;
     pcb.estado = PRONTO;
-    pcb.quantum = 8;  
+    pcb.quantum = 200;  
     pcb.instrucaoAtual = 0;
 
-    pthread_mutex_init(&mutex_processo, NULL);
-    pthread_cond_init(&cond_processo, NULL);
+    //pthread_mutex_init(&mutex_processo, NULL);
+    //pthread_cond_init(&cond_processo, NULL);
 
     carregarInstrucoes();
 }
@@ -70,14 +71,13 @@ void Process::carregarInstrucoes() {
     arquivo.close();
 }
 
-void Process::executar(RAM& ram, Disco& disco) {
-    //bloqueia o mutex para evitar acesso concorrente
-    //pthread_mutex_lock(&mutex_processo);
+void Process::executar(RAM& ram, Disco& disco, Cache& cache) {
     pcb.estado = EXECUTANDO;
-
     Pipeline pipeline;
     int PC = pcb.instrucaoAtual * 4;
     int Clock = 0;
+    string instruction;
+    int result;
 
     try {
         for (size_t i = 0; i < instrucoes.size(); ++i) {
@@ -99,22 +99,29 @@ void Process::executar(RAM& ram, Disco& disco) {
             Instruction instr = pipeline.InstructionFetch(ram, PC / 4);
             Clock++;
 
+            instruction = convertInstructionToString(instr);
+
+            // verifica se a instrucao e o resultado estao na cache
+            if (cache.get(instruction, result)) {
+                cout << endl << "[Processo " << pcb.pid + 1 << "] Executando instrução:" << instruction << endl;
+                cout << "Resultado dessa instrução obtido do cache: " << result << endl;
+                // pula a execucao da pipeline
+                PC += 4;
+                continue;
+            }
+
             DecodedInstruction decodedInstr = InstructionDecode(instr, pcb.regs);
             Clock++;
 
-            /*cout << endl << "[Processo " << pcb.pid + 1 << "] Executando instrução:" 
+            cout << endl << "[Processo " << pcb.pid + 1 << "] Executando instrução:" 
                       << " PC=" << PC 
                       << " Opcode=" << decodedInstr.opcode 
                       << " Destino=R" << decodedInstr.destiny 
                       << " Valor1=" << decodedInstr.value1 
-                      << " Valor2=" << decodedInstr.value2 << endl;*/
+                      << " Valor2=" << decodedInstr.value2 << endl;
 
-            pipeline.Execute(decodedInstr, pcb.regs, ram, PC, disco, Clock);
+            pipeline.Execute(decodedInstr, pcb.regs, ram, cache, PC, disco, Clock, instruction);
             PC += 4;
-
-            //cout << "PC = " << PC << endl;
-            //cout << "Clock = " << Clock << endl;
-
         }
         
         if (PC >= instrucoes.size() * 4) {
@@ -126,8 +133,6 @@ void Process::executar(RAM& ram, Disco& disco) {
         cerr << "Erro na execução do processo " << pcb.pid + 1<< ": " << e.what() << endl;
         pcb.estado = BLOQUEADO;
     }
-
-    //pthread_mutex_unlock(&mutex_processo);
 }
 
 void Process::carregarRegistros(const string& arquivoRegistros){
@@ -135,6 +140,7 @@ void Process::carregarRegistros(const string& arquivoRegistros){
     pipeline.setRegistersFromFile(pcb.regs, arquivoRegistros);
 }
 
+/*
 void Process::bloquear() {
     pthread_mutex_lock(&mutex_processo);
     pcb.estado = BLOQUEADO;
@@ -145,7 +151,7 @@ void Process::desbloquear() {
     pthread_mutex_lock(&mutex_processo);
     pcb.estado = PRONTO;
     pthread_mutex_unlock(&mutex_processo);
-}
+}*/
 
 void Process::salvarEstado() {
     estadoSalvo.instrucaoAtual = pcb.instrucaoAtual;
@@ -153,6 +159,26 @@ void Process::salvarEstado() {
     cout << "Salvando o estado do processo" << endl;
 }
 
+string Process::convertInstructionToString(const Instruction& instr) {
+    // Converta a instrução para uma string representativa
+    // Exemplo: "ADD, 1, 2, 3"
+    string opcodeStr;
+    switch (instr.op) {
+        case ADD: opcodeStr = "ADD"; break;
+        case SUB: opcodeStr = "SUB"; break;
+        case STORE: opcodeStr = "STORE"; break;
+        case AND: opcodeStr = "AND"; break;
+        case OR: opcodeStr = "OR"; break;
+        case LOAD: opcodeStr = "LOAD"; break;
+        case MULT: opcodeStr = "MULT"; break;
+        case DIV: opcodeStr = "DIV"; break;
+        case IF_igual: opcodeStr = "IF_igual"; break;
+        case IF_maior: opcodeStr = "IF_maior"; break;
+        case ENQ: opcodeStr = "ENQ"; break;
+    }
+    return opcodeStr + ", " + to_string(instr.Register_1) + ", " + to_string(instr.Register_2) + ", " + to_string(instr.Destiny_Register);
+}
+/*
 void Process::restaurarEstado() {
     pthread_mutex_lock(&mutex_processo);
     
@@ -160,5 +186,5 @@ void Process::restaurarEstado() {
     pcb.regs = estadoSalvo.registradores;
     
     pthread_mutex_unlock(&mutex_processo);
-}
+}*/
 

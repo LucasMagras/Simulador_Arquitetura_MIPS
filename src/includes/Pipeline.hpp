@@ -7,6 +7,7 @@
 #include "Registers.hpp"
 #include "ULA.hpp"
 #include "RAM.hpp"
+#include "Cache.hpp"
 #include "InstructionDecode.hpp"
 #include <string>
 
@@ -21,7 +22,7 @@ public:
     void Wb(const DecodedInstruction& decoded, int& resultado, RAM& ram, Disco& disco, int& Clock);
     void MemoryAccess(const DecodedInstruction& decoded, int resultado, Registers& regs, int& Clock);
     void setRegistersFromFile(Registers& regs, const std::string& regsFilename);
-    void Execute(const DecodedInstruction& decoded, Registers& regs, RAM& ram, int& PC, Disco& Disco, int& Clock);
+    void Execute(const DecodedInstruction& decoded, Registers& regs, RAM& ram, Cache& cache, int& PC, Disco& Disco, int& Clock, string instruction);
 };
 
 

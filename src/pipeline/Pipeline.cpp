@@ -25,7 +25,7 @@ void Pipeline::Wb(const DecodedInstruction& decoded, int& resultado, RAM& ram, D
 }
 
 void Pipeline::MemoryAccess(const DecodedInstruction& decoded, int resultado, Registers& regs, int& Clock) {
-    //cout << "Resultado a ser armazenado: " << resultado << endl;
+    cout << "Resultado a ser armazenado: " << resultado << endl;
 
     try {
         regs.set(decoded.destiny, resultado);
@@ -37,13 +37,13 @@ void Pipeline::MemoryAccess(const DecodedInstruction& decoded, int resultado, Re
     }
 }
 
-void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& ram, int& PC, Disco& disco, int& Clock) {
+void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& ram, Cache& cache, int& PC, Disco& disco, int& Clock, string instruction) {
     switch (decoded.opcode) {
         case ADD: {
             int resultado = ula.exec(decoded.value1, decoded.value2, ADD);
             Clock++;
             MemoryAccess(decoded, resultado, regs, Clock);
-            
+            cache.set(instruction, resultado);
             //cout << "ADD R" << decoded.destiny << " = " << decoded.value1 << " + " << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
             break;
         }
@@ -51,7 +51,7 @@ void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& 
             int resultado = ula.exec(decoded.value1, decoded.value2, SUB);
             Clock++;
             MemoryAccess(decoded, resultado, regs, Clock);
-            
+            cache.set(instruction, resultado);
             //cout << "SUB R" << decoded.destiny << " = " << decoded.value1 << " - " << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
             break;
         }
@@ -59,7 +59,7 @@ void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& 
             int resultado = ula.exec(decoded.value1, decoded.value2, AND);
             Clock++;
             MemoryAccess(decoded, resultado, regs, Clock);
-            
+            cache.set(instruction, resultado);
             //cout << "AND R" << decoded.destiny << " = " << decoded.value1 << " & " << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
             break;
         }
@@ -67,7 +67,7 @@ void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& 
             int resultado = ula.exec(decoded.value1, decoded.value2, OR);
             Clock++;
             MemoryAccess(decoded, resultado, regs, Clock);
-            
+            cache.set(instruction, resultado);
             //cout << "OR R" << decoded.destiny << " = " << decoded.value1 << " | " << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
             break;
         }
@@ -75,6 +75,7 @@ void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& 
             int valor = ram.read(decoded.value1);
             Clock++;
             MemoryAccess(decoded, valor, regs, Clock);
+            cache.set(instruction, valor);
             //cout << "LOAD R" << decoded.destiny << " = RAM[" << decoded.value1 << "] -> " << regs.get(decoded.destiny) << endl;
             break;
         }
@@ -84,6 +85,7 @@ void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& 
             Wb(decoded, valor, ram, disco, Clock);
             //cout << "STORE RAM[" << decoded.value1 << "] = R" << decoded.destiny << " -> " << valor << endl;
             disco.write(valor);
+            cache.set(instruction, valor);
             //cout << "STORE DISK[" << valor << "]" << endl;
             break;
         }
@@ -91,7 +93,7 @@ void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& 
             int resultado = ula.exec(decoded.value1, decoded.value2, MULT);
             Clock++;
             MemoryAccess(decoded, resultado, regs, Clock);
-            
+            cache.set(instruction, resultado);
             //cout << "MULT R" << decoded.destiny << " = " << decoded.value1 << " * " << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
             break;
         }
@@ -100,7 +102,7 @@ void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& 
                 int resultado = ula.exec(decoded.value1, decoded.value2, DIV);
                 Clock++;
                 MemoryAccess(decoded, resultado, regs, Clock);
-                
+                cache.set(instruction, resultado);
                 //cout << "DIV R" << decoded.destiny << " = " << decoded.value1 << " / " << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
             } 
             else {
@@ -112,7 +114,7 @@ void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& 
             int resultado = (decoded.value1 == decoded.value2) ? 1 : 0;
             Clock++;
             MemoryAccess(decoded, resultado, regs, Clock);
-            
+            cache.set(instruction, resultado);
             //cout << "IF_igual " << decoded.destiny << " = R" << decoded.value1 << " == R" << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
             break;
         }
@@ -131,6 +133,7 @@ void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& 
                     Clock++;
                     MemoryAccess(decoded, resultado, regs, Clock);
                 }
+                cache.set(instruction, resultado);
             }
             //cout << "ENQ " << decoded.destiny << " = R" << decoded.value1 << " enquanto R" << decoded.value2 << " -> " << regs.get(decoded.destiny) << endl;
             break;

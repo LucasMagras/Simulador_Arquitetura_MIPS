@@ -9,6 +9,7 @@
 #include "includes/Core.hpp"
 #include "includes/perifericos.hpp"
 #include "includes/ProcessManager.hpp"
+#include "includes/Cache.hpp"
 
 #include <iostream>
 
@@ -19,13 +20,10 @@ int main() {
     try {
         RAM ram;
         Disco disco;
+        Cache cache;
         Perifericos perifericos;
         Core core;
-
-        //perifericos.estadoPeriferico("teclado", true);
-        //perifericos.estadoPeriferico("mouse", true);
-
-        int numeroCores = 2;  
+        int numeroCores = 1; 
 
         vector<string> arquivosProcessos = {
             "data/instructions.txt",
@@ -41,13 +39,15 @@ int main() {
         };
 
         //carrega os processos
-        UnidadeControle uc(numeroCores, ram, disco, arquivosProcessos, arquivosRegs);
+        UnidadeControle uc(numeroCores, ram, disco, cache, arquivosProcessos, arquivosRegs);
 
         //cout << "\n--- Estado Final da RAM ---" << endl;
         //ram.display();
 
         //cout << "\n--- Estado Final do Disco ---" << endl;
         //disco.display();
+
+        cache.printCache();
 
     } catch (const exception& e) {
         cout << "Erro durante a execução: " << e.what() << endl;

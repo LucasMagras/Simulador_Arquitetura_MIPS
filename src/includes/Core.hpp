@@ -12,6 +12,7 @@
 #include "Disco.hpp"
 #include "Pipeline.hpp"
 #include "Process.hpp"
+#include "Cache.hpp"
 
 using namespace std;
 
@@ -22,10 +23,11 @@ private:
     Process* processoAtual;
     RAM& ram;
     Disco& disco;
+    Cache& cache;
 
 public:
     Core();
-    Core(int coreId, RAM& memory, Disco& storage);
+    Core(int coreId, RAM& memory, Disco& storage, Cache& cache);
     ~Core();
 
     bool disponivel;

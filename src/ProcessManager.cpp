@@ -3,6 +3,7 @@
 #include "includes/Core.hpp"
 #include "includes/RAM.hpp"
 #include "includes/Disco.hpp"
+#include "includes/Cache.hpp"
 
 #include <thread>
 #include <algorithm>
@@ -17,10 +18,10 @@
 using namespace std;
 namespace fs = std::filesystem;
 
-ProcessManager::ProcessManager(int numeroCores, RAM& ram, Disco& disco) : ramRef(ram), discoRef(disco) {
+ProcessManager::ProcessManager(int numeroCores, RAM& ram, Disco& disco, Cache& cache) : ramRef(ram), discoRef(disco), cacheRef(cache) {
     //inicializa cores
     for (int i = 0; i < numeroCores; ++i) {
-        cores.emplace_back(i, ram, disco);
+        cores.emplace_back(i, ram, disco, cache);
     }
 
     //mutex e condição
@@ -127,6 +128,26 @@ void ProcessManager::carregarProcessoSJF(const vector<string>& arquivosInstrucoe
     pthread_mutex_unlock(&mutex_fila);
 }
 
+void ProcessManager::carregarProcessosPorSimilaridade(const vector<string>& arquivosInstrucoes, const vector<string>& arquivosRegistros) {
+    vector<Process*> processosCarregados;
+
+    for (size_t i = 0; i < arquivosInstrucoes.size(); ++i) {
+        string arquivoRegistro = i < arquivosRegistros.size() ? arquivosRegistros[i] : "data/setRegisters.txt";
+        Process* novoProcesso = new Process(i, arquivosInstrucoes[i]);
+        novoProcesso->carregarRegistros(arquivoRegistro);
+        processosCarregados.push_back(novoProcesso);
+    }
+
+    // ordena os processos com base na similaridade
+    sort(processosCarregados.begin(), processosCarregados.end(), [this](Process* p1, Process* p2) {
+        return calcularSimilaridade(*p1, *p2) > 0;
+    });
+    
+    for (auto processo : processosCarregados) {
+        filaProcessos.push_back(processo);
+    }
+}
+
 void ProcessManager::escalonarProcessosPrioridade() {
     auto start = std::chrono::high_resolution_clock::now();
     cout << endl << "--- EXISTEM " << filaProcessosAltaPrioridade.size() + filaProcessosMediaPrioridade.size() + filaProcessosBaixaPrioridade.size() << " PROCESSOS PARA SEREM EXECUTADOS ---" << endl;
@@ -210,8 +231,6 @@ void ProcessManager::escalonarSJF() {
     while (!filaProcessosSJF.empty()) {
         //distribui os processos para cores livres
         for (auto& core : cores) {
-            //cout << endl << "Verificando o estado do Core " << core.getId() + 1 << ": " 
-                 //<< (core.isDisponivel() ? "Disponível" : "Ocupado") << endl;
             if (core.isDisponivel() && !filaProcessosSJF.empty()) {
                 Process* processo = filaProcessosSJF.front();
                 filaProcessosSJF.erase(filaProcessosSJF.begin());
@@ -248,8 +267,6 @@ void ProcessManager::escalonarProcessosFCFS() {
     while (!filaProcessos.empty()) {
         //distribui os processos para cores livres
         for (auto& core : cores) {
-            //cout << endl << "Verificando o estado do Core " << core.getId() + 1 << ": " 
-                 //<< (core.isDisponivel() ? "Disponível" : "Ocupado") << endl;
             if (core.isDisponivel() && !filaProcessos.empty()) {
                 Process* processo = filaProcessos.front();
                 filaProcessos.erase(filaProcessos.begin());
@@ -299,4 +316,17 @@ int ProcessManager::contarLinhas(const string& filename) {
     }
     arquivo.close();
     return linhas;
+}
+
+int ProcessManager::calcularSimilaridade(const Process& p1, const Process& p2) {
+    int similaridade = 0;
+    // compara as instruções
+    for (const auto& instr1 : p1.instrucoes) {
+        for (const auto& instr2 : p2.instrucoes) {
+            if (instr1.op == instr2.op) { 
+                similaridade++;
+            }
+        }
+    }
+    return similaridade;
 }

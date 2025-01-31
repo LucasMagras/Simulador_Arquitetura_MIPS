@@ -12,7 +12,7 @@ private:
 public:
     vector<int> memoria;
     vector<Instruction> instruction_memory;
-    static const int tamanho = 64;
+    static const int tamanho = 100;
 
     RAM();
 

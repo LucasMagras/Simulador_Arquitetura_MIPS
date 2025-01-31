@@ -1,65 +1,45 @@
 #ifndef CACHE_HPP
 #define CACHE_HPP
 
-#include <unordered_map>
-#include <queue>
+#include <vector>
 #include <iostream>
+#include <string>
 
 using namespace std;
 
 class Cache {
 private:
-    struct CacheLine {
-        int data;
-        bool dirty;  
-    };
-
-    unordered_map<int, CacheLine> cache;
-    queue<int> fifoQueue;
-    int capacidade;
+    vector<pair<string, int>> cache; 
+    int capacidade; 
 
 public:
-    Cache(int capacidade) : capacidade(capacidade) {}
+    Cache(); 
+    Cache(int capacidade); 
 
-    bool contains(int address) {
-        return cache.find(address) != cache.end();
-    }
-
-    int get(int address) {
-        if (contains(address)) {
-            return cache[address].data;
-        } else {
-            cerr << "Erro: Endereço " << address << " não está no cache!" << endl;
-            return -1;
-        }
-    }
-
-    void set(int address, int value, bool writeBack = false) {
+    void set(const string& instruction, int result) {
         if (cache.size() >= capacidade) {
-            evict();
+            cout << "Cache cheia, removendo a instrução mais antiga." << endl;
+            cache.erase(cache.begin()); // FIFO
+            return;
         }
-        
-        cache[address] = {value, writeBack};
-        fifoQueue.push(address);
+        cache.push_back({instruction, result});
     }
 
-    void evict() {
-        if (fifoQueue.empty()) return;
-
-        int oldAddress = fifoQueue.front();
-        fifoQueue.pop();
-
-        if (cache[oldAddress].dirty) {
-            cout << "Escrevendo dado modificado de R" << oldAddress << " na memória principal (Write-back)." << endl;
+    bool get(const string& instruction, int& result) {
+        for (const auto& entry : cache) {
+            if (entry.first == instruction) { // verifica se a instrucao esta na cache
+                result = entry.second; 
+                return true;
+            }
         }
-        
-        cache.erase(oldAddress);
-        cout << "Removendo R" << oldAddress << " do cache." << endl;
+        return false;
     }
 
-    void markDirty(int address) {
-        if (contains(address)) {
-            cache[address].dirty = true;
+    void printCache() {
+        cout << "Estado atual da Cache:" << endl;
+        for (const auto& entry : cache) {
+            cout << "Instrução: " << entry.first 
+                 << ", Resultado: " << entry.second << endl;
         }
     }
 };

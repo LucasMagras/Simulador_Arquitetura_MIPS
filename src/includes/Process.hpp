@@ -3,13 +3,15 @@
 
 #include <string>
 #include <vector>
-#include <pthread.h>
+#include <thread>
+#include <mutex>
 #include "Instruction.hpp"
 #include "Registers.hpp"
 #include "Opcode.hpp"
 #include "RAM.hpp"
 #include "Disco.hpp"
 #include "UnidadeControle.hpp"
+#include "Cache.hpp"
 
 using namespace std;
 
@@ -34,11 +36,12 @@ public:
     Process(int id, const std::string& file);
 
     void carregarInstrucoes();
-    void executar(RAM& ram, Disco& disco);
-    void bloquear();
-    void desbloquear();
+    void executar(RAM& ram, Disco& disco, Cache& cache);
+    string convertInstructionToString(const Instruction& instr);
+    //void bloquear();
+    //void desbloquear();
     void salvarEstado();
-    void restaurarEstado();
+    //void restaurarEstado();
 
     void carregarRegistros(const string& arquivoRegistros);
 
@@ -51,8 +54,8 @@ public:
     string filename;
 
 private:
-    pthread_mutex_t mutex_processo;
-    pthread_cond_t cond_processo;
+    //pthread_mutex_t mutex_processo;
+    //pthread_cond_t cond_processo;
 
     struct EstadoSalvo {
         int instrucaoAtual;

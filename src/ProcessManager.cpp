@@ -148,6 +148,58 @@ void ProcessManager::carregarProcessosPorSimilaridade(const vector<string>& arqu
     }
 }
 
+void ProcessManager::carregarProcessoMMU(const vector<string>& arquivosInstrucoes, const vector<string>& arquivosRegistros) {
+    pthread_mutex_lock(&mutex_fila);
+    
+    try {
+        // Limpa estruturas existentes
+        filaProcessos.clear();
+        posicoesMRU.clear();
+
+        // Carrega os novos processos
+        for (size_t i = 0; i < arquivosInstrucoes.size(); ++i) {
+            if (!fs::exists(arquivosInstrucoes[i])) {
+                cerr << "Arquivo de instruções não encontrado: " << arquivosInstrucoes[i] << endl;
+                continue;
+            }
+
+            // Verifica arquivo de registros
+            string arquivoRegistro = i < arquivosRegistros.size() ? arquivosRegistros[i] : "data/setRegisters.txt";
+            if (!fs::exists(arquivoRegistro)) {
+                cerr << "Arquivo de registros não encontrado: " << arquivoRegistro << endl;
+                continue;
+            }
+
+            // Cria novo processo
+            Process* novoProcesso = new Process(i, arquivosInstrucoes[i]);
+            
+            // Carrega registros do processo
+            novoProcesso->carregarRegistros(arquivoRegistro);
+
+            // Adiciona processo na fila
+            filaProcessos.push_back(novoProcesso);
+        }
+
+        // Cria e ordena vetor de posições
+        posicoesMRU.resize(filaProcessos.size());
+        for (size_t i = 0; i < filaProcessos.size(); i++) {
+            posicoesMRU[i] = i;
+        }
+
+        // Ordena vetor com base no número de linhas
+        sort(posicoesMRU.begin(), posicoesMRU.end(),
+            [this](int a, int b) {
+                return contarLinhas(filaProcessos[a]->filename) < 
+                       contarLinhas(filaProcessos[b]->filename);
+            });
+    }
+    catch (const exception& e) {
+        cerr << "Erro ao carregar processos MRU: " << e.what() << endl;
+    }
+
+    pthread_mutex_unlock(&mutex_fila);
+}
+
 void ProcessManager::escalonarProcessosPrioridade() {
     auto start = std::chrono::high_resolution_clock::now();
     cout << endl << "--- EXISTEM " << filaProcessosAltaPrioridade.size() + filaProcessosMediaPrioridade.size() + filaProcessosBaixaPrioridade.size() << " PROCESSOS PARA SEREM EXECUTADOS ---" << endl;
@@ -292,6 +344,74 @@ void ProcessManager::escalonarProcessosFCFS() {
 
     cout << endl << "--- FIM DA EXECUCAO, TODOS OS PROCESSOS FORAM CONCLUIDOS ---" << endl;
     cout << "Tempo total de execução (FCFS): " << duration.count() << " ms" << endl<< endl;
+}
+
+void ProcessManager::escalonarMMU() {
+    cout << endl << "--- INICIANDO A EXECUCAO DOS PROCESSOS UTILIZANDO A POLITICA MRU ---" << endl;
+
+    std::vector<std::thread> threads;
+
+    // Verifica se há processos para escalonar
+    if (filaProcessos.empty() || posicoesMRU.empty()) {
+        cout << "Nenhum processo para escalonar." << endl;
+        return;
+    }
+
+    //Log do vetor MRU e processos correspondentes
+    cout << endl << "Vetor MMU e processos correspondentes:" << endl;
+    for (size_t i = 0; i < posicoesMRU.size(); i++) {
+        int posicaoBinaria = posicoesMRU[i];
+        Process* processo = filaProcessos[posicaoBinaria];
+        
+        cout << "Posição no vetor: " << i 
+             << " | Valor binário: " << std::bitset<8>(posicaoBinaria).to_string()
+             << " | Processo PID: " << processo->pcb.pid + 1
+             << " | Tamanho: " << contarLinhas(processo->filename) << " linhas" << endl;
+    }
+    cout << endl;
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    // Distribui os processos para cores livres
+    while (!posicoesMRU.empty()) {
+        for (auto& core : cores) {
+            if (core.isDisponivel() && !posicoesMRU.empty()) {
+                // Obtém a posição na fila original
+                int posicaoNaFila = posicoesMRU.front();
+                posicoesMRU.erase(posicoesMRU.begin()); // Remove a posição do vetor
+
+                // Verifica se a posição é válida
+                if (posicaoNaFila < 0 || posicaoNaFila >= filaProcessos.size()) {
+                    cerr << "Posição inválida no vetor MMU: " << posicaoNaFila << endl;
+                    continue;
+                }
+
+                // Obtém o processo correspondente
+                Process* processo = filaProcessos[posicaoNaFila];
+
+                cout << endl << "--- Atribuindo o processo " << processo->pcb.pid + 1 
+                     << " ao Core " << core.getId() + 1 << " ---" << endl;
+                core.disponivel = false;
+
+                // Cria thread para executar o processo
+                threads.emplace_back(&Core::executeProcess, &core, processo, std::ref(filaProcessos));
+            }
+            this_thread::sleep_for(chrono::milliseconds(1)); // Remover se não necessário
+        }
+    }
+
+    // Aguarda todas as threads terminarem
+    for (auto& t : threads) {
+        if (t.joinable()) {
+            t.join();
+        }
+    }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+    cout << endl << "--- FIM DA EXECUCAO, TODOS OS PROCESSOS FORAM CONCLUIDOS ---" << endl;
+    cout << "Tempo total de execução (MRU): " << duration.count() << " ms" << endl << endl;
 }
 
 ProcessManager::~ProcessManager() {

@@ -3,3 +3,5 @@ STORE, 3, 2, 0
 STORE, 3, 2, 0
 LOAD, 1, 2, 3
 LOAD, 1, 2, 3
+LOAD, 1, 2, 3
+LOAD, 1, 2, 3

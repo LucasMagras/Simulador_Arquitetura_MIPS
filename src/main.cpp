@@ -23,7 +23,7 @@ int main() {
         Cache cache;
         Perifericos perifericos;
         Core core;
-        int numeroCores = 1; 
+        int numeroCores = 2; 
 
         vector<string> arquivosProcessos = {
             "data/instructions.txt",
@@ -31,7 +31,7 @@ int main() {
             "data/instructions3.txt",
             "data/instructions4.txt",
             "data/instructions5.txt",
-            "data/instructions6.txt"
+            //"data/instructions6.txt"
         };
 
         vector<string> arquivosRegs = {
@@ -47,7 +47,7 @@ int main() {
         //cout << "\n--- Estado Final do Disco ---" << endl;
         //disco.display();
 
-        cache.printCache();
+        //cache.printCache();
 
     } catch (const exception& e) {
         cout << "Erro durante a execução: " << e.what() << endl;

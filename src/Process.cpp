@@ -103,8 +103,8 @@ void Process::executar(RAM& ram, Disco& disco, Cache& cache) {
 
             // verifica se a instrucao e o resultado estao na cache
             if (cache.get(instruction, result)) {
-                cout << endl << "[Processo " << pcb.pid + 1 << "] Executando instrução:" << instruction << endl;
-                cout << "Resultado dessa instrução obtido do cache: " << result << endl;
+                //cout << endl << "[Processo " << pcb.pid + 1 << "] Executando instrução:" << instruction << endl;
+                //cout << "Resultado dessa instrução obtido do cache: " << result << endl;
                 // pula a execucao da pipeline
                 PC += 4;
                 continue;
@@ -113,12 +113,12 @@ void Process::executar(RAM& ram, Disco& disco, Cache& cache) {
             DecodedInstruction decodedInstr = InstructionDecode(instr, pcb.regs);
             Clock++;
 
-            cout << endl << "[Processo " << pcb.pid + 1 << "] Executando instrução:" 
+            /*cout << endl << "[Processo " << pcb.pid + 1 << "] Executando instrução:" 
                       << " PC=" << PC 
                       << " Opcode=" << decodedInstr.opcode 
                       << " Destino=R" << decodedInstr.destiny 
                       << " Valor1=" << decodedInstr.value1 
-                      << " Valor2=" << decodedInstr.value2 << endl;
+                      << " Valor2=" << decodedInstr.value2 << endl;*/
 
             pipeline.Execute(decodedInstr, pcb.regs, ram, cache, PC, disco, Clock, instruction);
             PC += 4;

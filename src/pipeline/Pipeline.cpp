@@ -25,7 +25,7 @@ void Pipeline::Wb(const DecodedInstruction& decoded, int& resultado, RAM& ram, D
 }
 
 void Pipeline::MemoryAccess(const DecodedInstruction& decoded, int resultado, Registers& regs, int& Clock) {
-    cout << "Resultado a ser armazenado: " << resultado << endl;
+    //cout << "Resultado a ser armazenado: " << resultado << endl;
 
     try {
         regs.set(decoded.destiny, resultado);

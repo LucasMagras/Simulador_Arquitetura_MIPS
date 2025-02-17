@@ -11,6 +11,8 @@ void UnidadeControle::carregarArquivo(ProcessManager& processManager, const vect
     //processManager.carregarProcessoSJF(arquivosInstrucoes, arquivosRegistros);
     //processManager.escalonarSJF();
     //processManager.carregarProcessosFCFS(arquivosInstrucoes, arquivosRegistros);
-    processManager.carregarProcessosPorSimilaridade(arquivosInstrucoes, arquivosRegistros);
-    processManager.escalonarProcessosFCFS();
+    //processManager.carregarProcessosPorSimilaridade(arquivosInstrucoes, arquivosRegistros);
+    //processManager.escalonarProcessosFCFS();
+    processManager.carregarProcessoMMU(arquivosInstrucoes, arquivosRegistros);
+    processManager.escalonarMMU();
 }
